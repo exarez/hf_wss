@@ -11,6 +11,22 @@ import (
 	"github.com/gorilla/websocket"
 )
 
+/////////////////////////////////////////////////////
+// THIS IS MOSTLY FOR DEALING WITH TUI STUFF LATER //
+/////////////////////////////////////////////////////
+type UserData struct {
+	Uid         int    `json:"uid"`
+	Username    string `json:"username"`
+	Usergroup   int    `json:"usergroup"`
+	Group       int    `json:"group"`
+	Avatar      string `json:"avatar"`
+	Regdate     int    `json:"regdate"`
+	Postnum     int    `json:"postnum"`
+	Level       int    `json:"level"`
+	Comparename string `json:"comparename"`
+	Rank        int    `json:"rank"`
+}
+
 type InputModel struct {
 	Content string
 }
@@ -43,31 +59,6 @@ func parseUser(userJson string) User {
 	}
 	return user
 }
-
-// Usergroups:
-// 2 = Registered
-// 3 = Staff
-// 4 = Admin
-// 7 = Banned
-// 9 = L33t
-// 28 = Ub3r
-// 38 = Closed
-
-/* EXAMPLE USER
-{
-  "uid": 4273612,
-  "username": "Yanix",
-  "usergroup": 28,
-  "group": 57,
-  "avatar": "./uploads/avatars/avatar_4273612.jpg?dateline=1575367945",
-  "avatardimensions": "112|150",
-  "regdate": 1561467969,
-  "postnum": 28946,
-  "level": 0,
-  "comparename": "yanix",
-  "rank": 4
-}
-*/
 
 type Rank struct {
 	name  string // Ub3r = 28

@@ -23,3 +23,6 @@ go.work
 # Certs
 *.pem
 *.der
+
+# Misc
+notes.md
