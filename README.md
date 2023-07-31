@@ -12,6 +12,7 @@ openssl req -x509 -newkey rsa:4096 -keyout key.pem -out cert.pem -days 365 -node
 ```
 
 3. Add the tampermonkey script to your browser
+ * *Remember to set the correct username at the top of the script*
 
 4. Run the server
 ```bash
@@ -19,3 +20,12 @@ go run main.go
 ```
 
 5. Open the browser and go to the convo
+
+# TODO
+
+- [ ] Colorize the usernames depending on groups and roles
+- [ ] Show logged in users
+- [ ] Ask for username on startup
+- [ ] Refresh if connection to the convo is lost
+
+- [x] Add a way to send messages to the convo from the terminal
