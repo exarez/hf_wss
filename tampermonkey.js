@@ -64,6 +64,14 @@
 		console.log("WebSocket error: ", event);
 	});
 
+	socket.onmessage = (event) => {
+		console.log("Message from server ", event.data);
+		let data = JSON.parse(event.data);
+		if (data.username && data.content) {
+			setInput(data.content);
+		}
+	};
+
 	function fetchLatestMessages() {
 		let allMessages = Array.from(
 			document.querySelectorAll(".message-convo-left, .message-convo-right")
