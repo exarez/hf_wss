@@ -15,7 +15,7 @@ import (
 )
 
 var (
-	testing bool = false
+	testing bool = true
 	port         = ":3333"
 )
 
@@ -24,6 +24,8 @@ type Message struct {
 	Content   string `json:"content"`
 	Usergroup int    `json:"usergroup"`
 }
+
+var shutDown = make(chan os.Signal, 1)
 
 var upgrader = websocket.Upgrader{
 	ReadBufferSize:  1024,
@@ -44,11 +46,11 @@ func main() {
 	fmt.Println(title)
 	fmt.Println(status)
 
-	interrupt := make(chan os.Signal, 1)
-	signal.Notify(interrupt, os.Interrupt, syscall.SIGTERM)
+	// interrupt := make(chan os.Signal, 1)
+	signal.Notify(shutDown, os.Interrupt, syscall.SIGTERM)
 
 	go func() {
-		<-interrupt
+		<-shutDown
 		fmt.Println("Received an interrupt signal, shutting down...")
 		// perform clean up if necessary
 		os.Exit(0)
@@ -59,55 +61,62 @@ func main() {
 }
 
 func handler(w http.ResponseWriter, r *http.Request) {
-	conn, err := upgrader.Upgrade(w, r, nil)
-	if err != nil {
-		log.Println(err)
+	select {
+	case <-shutDown:
+		// If we're shutting down, don't accept new requests.
 		return
-	}
-	defer conn.Close()
+	default:
 
-	confirmation := ""
-
-	go func() {
-		scanner := bufio.NewScanner(os.Stdin)
-		for scanner.Scan() {
-			msg := scanner.Text()
-
-			// TODO: Get username from user input at launch
-			message := Message{Username: "Ezocain", Content: msg}
-
-			if testing {
-				fmt.Print("Are you sure you want to send this message? (y/n) ")
-				fmt.Scanln(&confirmation)
-				// ----
-
-				if strings.TrimSpace(strings.ToLower(confirmation)) != "y" {
-					fmt.Println("Message not sent.")
-					confirmation = ""
-					continue
-				}
-			}
-
-			if err := conn.WriteJSON(message); err != nil {
-				log.Println("write:", err)
-				return
-			}
-		}
-	}()
-
-	for {
-		var message Message
-		_, p, err := conn.ReadMessage()
+		conn, err := upgrader.Upgrade(w, r, nil)
 		if err != nil {
 			log.Println(err)
 			return
 		}
-		err = json.Unmarshal(p, &message)
-		if err != nil {
-			log.Println("Error in unmarshalling:", err)
-			return
-		}
+		defer conn.Close()
 
-		fmt.Printf("%v: %s\n%s-----------------------%s\n", printColoredUser(message.Username, message.Usergroup), message.Content, "\033[3;30m", "\033[0m")
+		confirmation := ""
+
+		go func() {
+			scanner := bufio.NewScanner(os.Stdin)
+			for scanner.Scan() {
+				msg := scanner.Text()
+
+				// TODO: Get username from user input at launch
+				message := Message{Username: "Ezocain", Content: msg}
+
+				if testing {
+					fmt.Print("Are you sure you want to send this message? (y/n) ")
+					fmt.Scanln(&confirmation)
+					// ----
+
+					if strings.TrimSpace(strings.ToLower(confirmation)) != "y" {
+						fmt.Println("Message not sent.")
+						confirmation = ""
+						continue
+					}
+				}
+
+				if err := conn.WriteJSON(message); err != nil {
+					log.Println("write:", err)
+					return
+				}
+			}
+		}()
+
+		for {
+			var message Message
+			_, p, err := conn.ReadMessage()
+			if err != nil {
+				log.Println(err)
+				return
+			}
+			err = json.Unmarshal(p, &message)
+			if err != nil {
+				log.Println("Error in unmarshalling:", err)
+				return
+			}
+
+			fmt.Printf("%v: %s\n%s-----------------------%s\n", printColoredUser(message.Username, message.Usergroup), message.Content, "\033[3;30m", "\033[0m")
+		}
 	}
 }
