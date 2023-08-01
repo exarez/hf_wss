@@ -6,12 +6,16 @@ A WSS integration to communicate with the convo from your terminal using the bro
 ## Usage
 1. Clone the repo
 
-2. Create a self-signed certificate for upgrading WS to WSS
+2. Go to your browser settings, search "cert", and go to certificates.
+3. Go to the "Servers" tab, and add 127.0.0.1:3333/ as an exception.
+
+OR:
+Create a self-signed certificate for upgrading WS to WSS
 ```bash
 openssl req -x509 -newkey rsa:4096 -keyout key.pem -out cert.pem -days 365 -nodes
 ```
 
-3. Add the tampermonkey script to your browser
+4. Add the tampermonkey script to your browser
  * *Remember to set the correct username at the top of the script*
 
 4. Run the server
